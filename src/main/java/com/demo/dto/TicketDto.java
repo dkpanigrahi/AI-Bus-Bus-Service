@@ -1,5 +1,6 @@
 package com.demo.dto;
 
+import com.demo.dto.response.BusDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

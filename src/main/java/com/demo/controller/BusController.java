@@ -2,6 +2,7 @@ package com.demo.controller;
 
 import com.demo.dto.*;
 import com.demo.dto.response.BusDto;
+import com.demo.dto.response.BusSearchResponseDto;
 import com.demo.dto.response.TicketPriceCalculationResponse;
 import com.demo.entity.Conductor;
 import com.demo.entity.Driver;
@@ -32,8 +33,10 @@ public class BusController {
      * Create a fully-configured bus.
      */
     @PostMapping
-    public ResponseEntity<ApiResponse<BusDto>> createBus(@RequestBody BusCreateRequest request) {
+    public ResponseEntity<ApiResponse<BusDto>> createBus(@RequestBody BusCreateRequest request,
+                                                         @RequestHeader("X-Operator-Id") Long busOperatorId) {
         log.info("POST /api/buses  busNo={}", request.getBusNo());
+        request.setBusOperatorId(busOperatorId);
         BusDto created = busService.createBus(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Bus created successfully", created));

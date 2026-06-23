@@ -10,7 +10,6 @@ import java.util.List;
 @AllArgsConstructor
 public class BusCreateRequest {
  
-    // ── Core bus fields ───────────────────────────────────────────────────────
     String busNo;
     String busName;
     String coach;        // AC Seater, Sleeper, etc.
@@ -23,12 +22,9 @@ public class BusCreateRequest {
     Integer conductorId;
     Long busOperatorId;
  
-    // ── Stop list (admin enters all stops in order) ───────────────────────────
     List<BusStopRequest> stops;
  
-    // ── Seat layout config (admin picks arrangement and row counts) ───────────
     SeatLayoutRequest seatLayout;
  
-    // ── Per-seat-type price adjustments ──────────────────────────────────────
     List<SeatTypePricingRequest> seatTypePricings;
 }

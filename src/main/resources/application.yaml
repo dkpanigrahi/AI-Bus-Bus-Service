@@ -25,10 +25,6 @@ eureka:
     service-url:
       defaultZone: http://localhost:8761/eureka/
 
-jwt:
-  secret: mysupersecurejwtsecretkey123456789123456
-  expiration: 86400000
-
 logging:
   level:
     com.demo.userservice: DEBUG
