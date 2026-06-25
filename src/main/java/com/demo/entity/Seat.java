@@ -72,7 +72,7 @@ public class Seat {
     private String seatLabel;
 
 
-    @Column(nullable = false)
+    @Column(name = "row_no", nullable = false)
     private int rowNumber;
 
     @Column(nullable = false)

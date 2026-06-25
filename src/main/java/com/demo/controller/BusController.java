@@ -190,11 +190,11 @@ public class BusController {
      */
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<List<BusSearchResponseDto>>> searchBuses(
-            @RequestParam String from,
-            @RequestParam String to,
+            @RequestParam String startPlace,
+            @RequestParam String destination,
             @RequestParam String date) {
-        log.info("GET /api/buses/search  from={} to={} date={}", from, to, date);
-        List<BusSearchResponseDto> results = busService.searchBuses(from, to, date);
+        log.info("GET /api/buses/search  from={} to={} date={}", startPlace, destination, date);
+        List<BusSearchResponseDto> results = busService.searchBuses(startPlace, destination, date);
         return ResponseEntity.ok(ApiResponse.success(results));
     }
 
