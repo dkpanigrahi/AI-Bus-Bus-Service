@@ -120,12 +120,15 @@ public class BusController {
     /**
      * Returns seat grid for a bus on a given date, with booked/available status
      */
-    @GetMapping("/{id}/seats")
+    @GetMapping("/available-seats")
     public ResponseEntity<ApiResponse<SeatAvailabilityResponse>> getSeatAvailability(
-            @PathVariable int id,
-            @RequestParam String date) {
-        log.info("GET /api/buses/{}/seats  date={}", id, date);
-        SeatAvailabilityResponse availability = busService.getSeatAvailability(id, date);
+            @RequestParam int busId,
+            @RequestParam String date,
+            @RequestParam("boardingStopSequence") int boardingStopSequence,
+            @RequestParam("alightingStopSequence") int alightingStopSequence) {
+        log.info("GET /api/buses/{}/seats  date={}", busId, date);
+        SeatAvailabilityResponse availability = busService.getSeatAvailability(busId, date,
+                boardingStopSequence,alightingStopSequence);
         return ResponseEntity.ok(ApiResponse.success(availability));
     }
 

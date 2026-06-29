@@ -337,13 +337,14 @@ public class BusService {
     // =========================================================================
 
     @Transactional(readOnly = true)
-    public SeatAvailabilityResponse getSeatAvailability(int busId, String date) {
+    public SeatAvailabilityResponse getSeatAvailability(int busId, String date,
+           int boardingStopSequence, int alightingStopSequence) {
         log.info("Seat availability for busId={} date={}", busId, date);
         Bus bus = findActiveById(busId);
 
         try {
             ResponseEntity<ApiResponse<SeatAvailabilityResponse>> resp =
-                    bookingServiceClient.getSeatAvailability(busId, date);
+                    bookingServiceClient.getSeatAvailability(busId, date,boardingStopSequence,alightingStopSequence);
             if (resp.getBody() != null && resp.getBody().isSuccess()) {
                 return resp.getBody().getData();
             }
