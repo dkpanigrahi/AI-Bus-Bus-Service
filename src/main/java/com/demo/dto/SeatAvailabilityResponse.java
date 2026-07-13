@@ -16,4 +16,7 @@ public class SeatAvailabilityResponse {
     private String date;
     private Map<Integer, Boolean> seatMap;
     private int totalSeats;
+    private int availableSeats;
+    private Integer boardingStopSequence;
+    private Integer alightingStopSequence;
 }

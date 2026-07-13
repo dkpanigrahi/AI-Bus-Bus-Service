@@ -121,13 +121,13 @@ public class BusController {
      * Returns seat grid for a bus on a given date, with booked/available status
      */
     @GetMapping("/available-seats")
-    public ResponseEntity<ApiResponse<SeatAvailabilityResponse>> getSeatAvailability(
+    public ResponseEntity<ApiResponse<BusDto>> getSeatAvailability(
             @RequestParam int busId,
             @RequestParam String date,
             @RequestParam("boardingStopSequence") int boardingStopSequence,
             @RequestParam("alightingStopSequence") int alightingStopSequence) {
         log.info("GET /api/buses/{}/seats  date={}", busId, date);
-        SeatAvailabilityResponse availability = busService.getSeatAvailability(busId, date,
+        BusDto availability = busService.getBusInformationByDateAndRoute(busId, date,
                 boardingStopSequence,alightingStopSequence);
         return ResponseEntity.ok(ApiResponse.success(availability));
     }
@@ -204,14 +204,14 @@ public class BusController {
     /**
      * Search buses by route only — no date filter.
      */
-    @GetMapping("/search/route")
-    public ResponseEntity<ApiResponse<List<BusSearchResponseDto>>> searchByRoute(
-            @RequestParam String from,
-            @RequestParam String to) {
-        log.info("GET /api/buses/search/route  from={} to={}", from, to);
-        List<BusSearchResponseDto> results = busService.searchBusesByRoute(from, to);
-        return ResponseEntity.ok(ApiResponse.success(results));
-    }
+//    @GetMapping("/search/route")
+//    public ResponseEntity<ApiResponse<List<BusSearchResponseDto>>> searchByRoute(
+//            @RequestParam String from,
+//            @RequestParam String to) {
+//        log.info("GET /api/buses/search/route  from={} to={}", from, to);
+//        List<BusSearchResponseDto> results = busService.searchBusesByRoute(from, to);
+//        return ResponseEntity.ok(ApiResponse.success(results));
+//    }
 
     // =========================================================================
     //  DRIVER

@@ -23,10 +23,6 @@ public interface BookingServiceClient {
             @RequestParam("boardingStopSequence") int boardingStopSequence,
             @RequestParam("alightingStopSequence") int alightingStopSequence);
 
-    @GetMapping("/api/bookings/seats/booked-count")
-    ResponseEntity<ApiResponse<Integer>> getBookedSeatCount(
-            @RequestParam("busId") int busId,
-            @RequestParam("date") String date);
 
     @Component
     @Slf4j
@@ -39,10 +35,5 @@ public interface BookingServiceClient {
             return ResponseEntity.ok(ApiResponse.error("Seat availability service is temporarily unavailable"));
         }
 
-        @Override
-        public ResponseEntity<ApiResponse<Integer>> getBookedSeatCount(int busId, String date) {
-            log.warn("Fallback triggered for getBookedSeatCount - busId: {}, date: {}", busId, date);
-            return ResponseEntity.ok(ApiResponse.error("Booking service is temporarily unavailable"));
-        }
     }
 }

@@ -317,56 +317,53 @@ public class BusService {
         log.info("Found {} buses for {} → {} on {}", buses.size(), fromCity, toCity, dayOfWeek);
 
         return buses.stream()
-                .map(bus -> mapToSearchDto(bus, fromCity, toCity))
-                .filter(Objects::nonNull)        // filter buses where sequence order is wrong
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public List<BusSearchResponseDto> searchBusesByRoute(String fromCity, String toCity) {
-        log.info("Route search: {} → {}", fromCity, toCity);
-        List<Bus> buses = busRepository.findBusesByStopCities(fromCity, toCity);
-        return buses.stream()
-                .map(bus -> mapToSearchDto(bus, fromCity, toCity))
+                .map(bus -> mapToSearchDto(bus,date, fromCity, toCity))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
+
+//    @Transactional(readOnly = true)
+//    public List<BusSearchResponseDto> searchBusesByRoute(String fromCity, String toCity) {
+//        log.info("Route search: {} → {}", fromCity, toCity);
+//        List<Bus> buses = busRepository.findBusesByStopCities(fromCity, toCity);
+//        return buses.stream()
+//                .map(bus -> mapToSearchDto(bus, fromCity, toCity))
+//                .filter(Objects::nonNull)
+//                .collect(Collectors.toList());
+//    }
 
     // =========================================================================
     //  SEAT AVAILABILITY  (delegates to Booking Service via Feign)
     // =========================================================================
 
     @Transactional(readOnly = true)
-    public SeatAvailabilityResponse getSeatAvailability(int busId, String date,
-           int boardingStopSequence, int alightingStopSequence) {
-        log.info("Seat availability for busId={} date={}", busId, date);
-        Bus bus = findActiveById(busId);
+    public BusDto getBusInformationByDateAndRoute(int busId, String date,
+                                                  int boardingStopSequence, int alightingStopSequence) {
+        BusDto dto = mapToBusDto(findActiveById(busId));
+        Map<Integer, Boolean> seatAvailable = null;
+        ResponseEntity<ApiResponse<SeatAvailabilityResponse>> resp =
+                bookingServiceClient.getSeatAvailability(busId, date, boardingStopSequence, alightingStopSequence);
 
-        try {
-            ResponseEntity<ApiResponse<SeatAvailabilityResponse>> resp =
-                    bookingServiceClient.getSeatAvailability(busId, date,boardingStopSequence,alightingStopSequence);
-            if (resp.getBody() != null && resp.getBody().isSuccess()) {
-                return resp.getBody().getData();
-            }
-        } catch (Exception e) {
-            log.warn("Booking service unavailable for busId={}: {}. Returning all-available fallback.",
-                    busId, e.getMessage());
+        if (resp.getBody() != null && resp.getBody().isSuccess() && resp.getBody().getData() != null) {
+            seatAvailable = resp.getBody().getData().getSeatMap();
         }
 
-        // Fallback: all active seats available
-        Map<Integer, Boolean> seatMap = new LinkedHashMap<>();
-        if (bus.getSeatLayout() != null) {
-            bus.getSeatLayout().getSeats().stream()
-                    .filter(Seat::isActive)
-                    .forEach(s -> seatMap.put(s.getSeatNumber(), true));
+        if (seatAvailable != null && dto.getSeatLayout() != null && dto.getSeatLayout().getSeats() != null) {
+            Map<Integer, Boolean> finalSeatAvailable = seatAvailable;
+            dto.getSeatLayout().getSeats().forEach(seat -> {
+
+                Boolean isAvailable = finalSeatAvailable.get(seat.getId());
+                if (isAvailable != null) {
+                    seat.setBooked(!isAvailable);
+                } else {
+                    seat.setBooked(true);
+                }
+            });
         }
-        return SeatAvailabilityResponse.builder()
-                .busId(busId)
-                .date(date)
-                .seatMap(seatMap)
-                .totalSeats(bus.getTotalSeats())
-                .build();
+
+        return dto;
     }
+
 
     // =========================================================================
     //  TICKET PRICE CALCULATION
@@ -652,7 +649,7 @@ public class BusService {
                             .isSleeper(seat.isSleeper())
                             .isActive(seat.isActive())
                             .seatPriceAdjustment(adj)
-                            .isBooked(false)   // booking service enriches this separately
+                            .isBooked(false)
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -704,7 +701,7 @@ public class BusService {
      * Returns null if the bus does not serve the route in the correct direction
      * (boarding stop must come before alighting stop in sequence).
      */
-    private BusSearchResponseDto mapToSearchDto(Bus bus, String fromCity, String toCity) {
+    private BusSearchResponseDto mapToSearchDto(Bus bus, String date, String fromCity, String toCity) {
         List<BusStop> stops = bus.getStops();
 
         Optional<BusStop> boardingOpt = stops.stream()
@@ -724,7 +721,7 @@ public class BusService {
         int basePrice = alighting.getPriceFromOrigin() - boarding.getPriceFromOrigin();
 
         // Try to get available seat count from booking service; fallback to totalSeats
-        int availableSeats = fetchAvailableSeatCount(bus.getId());
+        int availableSeats = fetchAvailableSeatCount(bus.getId(),date,boarding.getStopSequence(),alighting.getStopSequence());
 
         return BusSearchResponseDto.builder()
                 .id(bus.getId())
@@ -743,6 +740,8 @@ public class BusService {
                 .availableSeats(availableSeats)
                 .driverName(bus.getDriver() != null ? bus.getDriver().getName() : "N/A")
                 .conductorName(bus.getConductor() != null ? bus.getConductor().getName() : "N/A")
+                .originCityStopSequencyId(boarding.getStopSequence())
+                .destCityStopSequencyId(alighting.getStopSequence())
                 .build();
     }
 
@@ -777,17 +776,14 @@ public class BusService {
         return 0;
     }
 
-    private int fetchAvailableSeatCount(int busId) {
+    private int fetchAvailableSeatCount(int busId,String date,
+             Integer boardingStopSequence, Integer alightingStopSequence) {
         try {
-            ResponseEntity<ApiResponse<Integer>> resp =
-                    bookingServiceClient.getBookedSeatCount(busId,
-                            LocalDate.now().toString());
+            ResponseEntity<ApiResponse<SeatAvailabilityResponse>> resp =
+                    bookingServiceClient.getSeatAvailability(busId,date,boardingStopSequence,alightingStopSequence);
             if (resp.getBody() != null && resp.getBody().isSuccess()
                     && resp.getBody().getData() != null) {
-                Bus bus = busRepository.findById(busId).orElse(null);
-                if (bus != null) {
-                    return bus.getTotalSeats() - resp.getBody().getData();
-                }
+               return resp.getBody().getData().getAvailableSeats();
             }
         } catch (Exception e) {
             log.debug("Could not fetch booked seat count for busId={}: {}", busId, e.getMessage());

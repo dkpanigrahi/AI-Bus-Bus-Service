@@ -33,4 +33,7 @@ public class BusSearchResponseDto {
  
     String driverName;
     String conductorName;
+
+    int originCityStopSequencyId;
+    int destCityStopSequencyId;
 }
