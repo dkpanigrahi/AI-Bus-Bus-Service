@@ -805,4 +805,53 @@ public class BusService {
         String sign = adjValue >= 0 ? "+" : "";
         return "Base ₹" + basePrice + " " + sign + adjStr + " (" + adjLabel + ") = ₹" + finalPrice;
     }
+
+
+    // =========================================================================
+    //  INTERNAL — BOOKING SERVICE PROJECTION
+    // =========================================================================
+
+    @Transactional(readOnly = true)
+    public BusDetailDto getBusDetailForBooking(int busId) {
+        log.debug("Fetching internal bus detail for Booking Service busId={}", busId);
+        return mapToBusDetailDto(findActiveById(busId));
+    }
+
+    private BusDetailDto mapToBusDetailDto(Bus bus) {
+        return BusDetailDto.builder()
+                .id(bus.getId())
+                .busNo(bus.getBusNo())
+                .totalSeats(bus.getTotalSeats())
+                .stops(bus.getStops().stream()
+                        .sorted(Comparator.comparingInt(BusStop::getStopSequence))
+                        .map(s -> BusDetailDto.StopDto.builder()
+                                .stopSequence(s.getStopSequence())
+                                .stopName(s.getStopName())
+                                .priceFromOrigin(s.getPriceFromOrigin())
+                                .build())
+                        .collect(Collectors.toList()))
+                .seatLayout(bus.getSeatLayout() != null
+                        ? BusDetailDto.SeatLayoutDto.builder()
+                        .seats(bus.getSeatLayout().getSeats().stream()
+                                .map(seat -> BusDetailDto.SeatDto.builder()
+                                        .seatNumber(seat.getSeatNumber())
+                                        .seatLabel(seat.getSeatLabel())
+                                        .seatType(seat.getSeatType().name())
+                                        .deckLevel(seat.getDeckLevel().name())
+                                        .isSleeper(seat.isSleeper())
+                                        .isActive(seat.isActive())
+                                        .build())
+                                .collect(Collectors.toList()))
+                        .build()
+                        : null)
+                .seatTypePricings(bus.getSeatTypePricings().stream()
+                        .map(p -> BusDetailDto.SeatTypePricingDto.builder()
+                                .seatType(p.getSeatType().name())
+                                .deckLevel(p.getDeckLevel().name())
+                                .adjustmentType(p.getAdjustmentType().name())
+                                .adjustmentValue(p.getAdjustmentValue())
+                                .build())
+                        .collect(Collectors.toList()))
+                .build();
+    }
 }

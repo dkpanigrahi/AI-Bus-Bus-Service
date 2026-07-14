@@ -1,6 +1,7 @@
 package com.demo.controller;
 
 import com.demo.dto.*;
+import com.demo.dto.response.BusDetailDto;
 import com.demo.dto.response.BusDto;
 import com.demo.dto.response.BusSearchResponseDto;
 import com.demo.dto.response.TicketPriceCalculationResponse;
@@ -259,5 +260,14 @@ public class BusController {
     public ResponseEntity<ApiResponse<ConductorDto>> getConductorById(@PathVariable int id) {
         log.info("GET /api/buses/conductors/{}", id);
         return ResponseEntity.ok(ApiResponse.success(busService.getConductorById(id)));
+    }
+
+    /**
+     * Internal, service-to-service endpoint. Returns a slim projection of the bus
+     */
+    @GetMapping("/internal/{id}/detail")
+    public ResponseEntity<ApiResponse<BusDetailDto>> getBusDetailForBooking(@PathVariable int id) {
+        BusDetailDto dto = busService.getBusDetailForBooking(id);
+        return ResponseEntity.ok(ApiResponse.success(dto));
     }
 }

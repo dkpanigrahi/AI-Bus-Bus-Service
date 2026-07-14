@@ -6,9 +6,9 @@ spring:
     name: bus-service
 
   datasource:
-    url: jdbc:mysql://localhost:3306/bus_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: micro_user
-    password: micro123
+    url: jdbc:mysql://localhost:3307/bus_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
