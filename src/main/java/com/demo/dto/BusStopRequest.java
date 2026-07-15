@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -18,10 +20,10 @@ public class BusStopRequest {
     String city;
  
     /** HH:mm  —  null for first stop */
-    String arrivalTime;
+    LocalDateTime arrivalTime;
  
     /** HH:mm  —  null for last stop */
-    String departureTime;
+    LocalDateTime departureTime;
  
     /**
      * Cumulative base price from origin to this stop, in ₹.

@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class BusSearchResponseDto {
     int id;
@@ -20,10 +22,10 @@ public class BusSearchResponseDto {
     String destinationStopName;
  
     // Departure time from origin stop
-    String departureTime;
+    LocalDateTime departureTime;
  
     // Arrival time at destination stop
-    String arrivalTime;
+    LocalDateTime arrivalTime;
  
     // Base fare for the searched route segment (computed from stop prices)
     int basePrice;

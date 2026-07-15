@@ -3,6 +3,9 @@ package com.demo.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 /**
  * Represents one stop on a bus route.
  *
@@ -53,10 +56,10 @@ public class BusStop {
     private String city;
 
     /** Scheduled arrival time at this stop, e.g. "14:00". Null for the first stop. */
-    private String arrivalTime;
+    private LocalDateTime arrivalTime;
 
     /** Scheduled departure time from this stop, e.g. "14:10". Null for last stop. */
-    private String departureTime;
+    private LocalDateTime departureTime;
 
     /**
      * Admin-entered cumulative base price (in ₹) from origin to this stop.
